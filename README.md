@@ -22,6 +22,9 @@ Cocok untuk pemantauan keselamatan di **pabrik, gudang, dan area konstruksi.**
 
 ## Prasyarat
 
+### Dataset
+[Unduh Dataset](https://www.kaggle.com/datasets/shlokraval/ppe-dataset-yolov8/data)
+
 ### Umum
 
 * Python **3.9+**
