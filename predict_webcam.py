@@ -22,7 +22,7 @@ while True:
 
     if success:
         # Balik frame secara horizontal untuk menghilangkan efek mirror
-        frame = cv2.flip(frame, 1) # <<-- TAMBAHKAN BARIS INI
+        frame = cv2.flip(frame, 1)
 
         # Lakukan deteksi objek pada frame
         # stream=True direkomendasikan untuk video agar lebih efisien memori
