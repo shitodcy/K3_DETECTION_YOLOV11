@@ -1,15 +1,54 @@
+import torch
 from ultralytics import YOLO
 
-# Muat model pre-trained YOLOv8n. 'n' adalah versi nano, paling ringan dan cepat.
-# Cocok untuk memulai dan memastikan semua berjalan lancar.
-model = YOLO('yolov8n.pt')
+def verify_gpu():
+    """
+    Fungsi ini memeriksa ketersediaan GPU (CUDA) dan mencetak informasi perangkat.
+    """
+    try:
+        if torch.cuda.is_available():
+            gpu_count = torch.cuda.device_count()
+            print("=" * 50)
+            print(f"✅ GPU DETECTED! Found {gpu_count} CUDA-enabled GPU(s).")
+            for i in range(gpu_count):
+                gpu_name = torch.cuda.get_device_name(i)
+                print(f"   - GPU {i}: {gpu_name}")
+            print("=" * 50)
+            return True
+        else:
+            print("=" * 50)
+            print("⚠️ WARNING: No CUDA-enabled GPU detected.")
+            print("   Training will run on CPU, which will be significantly slower.")
+            print("=" * 50)
+            return False
+    except Exception as e:
+        print(f"An error occurred while checking for GPU: {e}")
+        return False
 
-# Mulai proses training
+# --- KONFIGURASI TRAINING KEDUA ---
+PRETRAINED_MODEL_PATH = 'runs/detect/yolov8n_ppe_custom4/weights/best.pt'
+NEW_DATASET_CONFIG_PATH = 'archive(1)/sh17.yaml'
+NEW_RUN_NAME = 'yolov8n_ppe_finetuned_sh17'
+
 if __name__ == '__main__':
+    verify_gpu()
+    model = YOLO(PRETRAINED_MODEL_PATH)
+
+    print(f"\nContinuing training from model: {PRETRAINED_MODEL_PATH}")
+    print(f"Using new dataset: {NEW_DATASET_CONFIG_PATH}\n")
+    
+    # Mulai proses training lanjutan dengan setelan yang dioptimalkan untuk ROG Strix G614JU
     results = model.train(
-        data='archive/data.yaml',   # Path ke file konfigurasi dataset Anda
-        epochs=50,               # Jumlah epoch (berapa kali model melihat seluruh dataset)
-        imgsz=640,               # Ukuran gambar input diubah menjadi 640x640
-        batch=8,                # Jumlah gambar yang diproses dalam satu waktu. Sesuaikan dengan VRAM Anda.
-        name='yolov8n_ppe_custom' # Nama folder untuk menyimpan hasil training
+        data=NEW_DATASET_CONFIG_PATH,
+        epochs=50,
+        imgsz=640,
+        
+        # --- SETELAN OPTIMAL & AMAN UNTUK PERANGKAT ANDA ---
+        batch=8,           # Aman untuk VRAM 6GB
+        workers=4,         # Ideal untuk CPU Core i7 HX Anda
+        cache='disk',      # Pilihan terbaik untuk RAM 16GB
+        
+        name=NEW_RUN_NAME
     )
+    
+    print(f"\nSecond training complete! New model saved in 'runs/detect/{NEW_RUN_NAME}'")
