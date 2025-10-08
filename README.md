@@ -54,8 +54,8 @@ nvidia-smi
 1. **Clone Repositori**
 
    ```bash
-   git clone https://github.com/NAMA_USER_ANDA/NAMA_REPO_ANDA.git
-   cd NAMA_REPO_ANDA
+   git clone https://github.com/Magang-API/K3_DETECTION_YOLOV8
+   cd K3_DETECTION_YOLOV8
    ```
 
 2. **Buat Virtual Environment**
