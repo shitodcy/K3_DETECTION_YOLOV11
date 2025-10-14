@@ -29,6 +29,11 @@ def verify_gpu():
 PRETRAINED_MODEL_PATH = '/home/azunya/kuliah/sem5/magang/project/K3_DETECTION_YOLOV8/yolo11n.pt'
 NEW_DATASET_CONFIG_PATH = '/home/azunya/kuliah/sem5/magang/project/K3_DETECTION_YOLOV8/dataset/Hard Helmet Detect v4.v3i.yolov8/data.yaml'
 NEW_RUN_NAME = '/home/azunya/kuliah/sem5/magang/project/K3_DETECTION_YOLOV8/runs/detect/V11-1'
+=======
+        
+PRETRAINED_MODEL_PATH = 'file best atau last .pt'
+NEW_DATASET_CONFIG_PATH = 'file .yaml'
+NEW_RUN_NAME = 'nama folder hasil training'
 
 if __name__ == '__main__':
     verify_gpu()
@@ -43,6 +48,9 @@ if __name__ == '__main__':
         imgsz=640,
         device=0,
         batch=4,           # Aman untuk VRAM 6GB
+=======
+        
+        batch=8,           # Aman untuk VRAM 6GB
         workers=4,         # Ideal untuk CPU Core i7 HX 
         cache='disk',      # Pilihan terbaik untuk RAM 16GB
         
