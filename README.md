@@ -1,5 +1,7 @@
-# Deteksi APD Real-time dengan YOLOv8
+# CODE TESTING JANGAN DI CLONE 
 
+[dataset 14GB](https://www.kaggle.com/datasets/mugheesahmad/sh17-dataset-for-ppe-detection)
+=======
 Proyek ini menggunakan **YOLOv8** untuk mendeteksi penggunaan **Alat Pelindung Diri (APD)** secara **real-time** melalui webcam.
 Cocok untuk pemantauan keselamatan di **pabrik, gudang, dan area konstruksi.**
 

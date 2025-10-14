@@ -24,6 +24,12 @@ def verify_gpu():
     except Exception as e:
         print(f"An error occurred while checking for GPU: {e}")
         return False
+
+# --- KONFIGURASI TRAINING KEDUA ---
+PRETRAINED_MODEL_PATH = '/home/azunya/kuliah/sem5/magang/project/K3_DETECTION_YOLOV8/yolo11n.pt'
+NEW_DATASET_CONFIG_PATH = '/home/azunya/kuliah/sem5/magang/project/K3_DETECTION_YOLOV8/dataset/Hard Helmet Detect v4.v3i.yolov8/data.yaml'
+NEW_RUN_NAME = '/home/azunya/kuliah/sem5/magang/project/K3_DETECTION_YOLOV8/runs/detect/V11-1'
+=======
         
 PRETRAINED_MODEL_PATH = 'file best atau last .pt'
 NEW_DATASET_CONFIG_PATH = 'file .yaml'
@@ -40,6 +46,9 @@ if __name__ == '__main__':
         data=NEW_DATASET_CONFIG_PATH,
         epochs=50,
         imgsz=640,
+        device=0,
+        batch=4,           # Aman untuk VRAM 6GB
+=======
         
         batch=8,           # Aman untuk VRAM 6GB
         workers=4,         # Ideal untuk CPU Core i7 HX 
