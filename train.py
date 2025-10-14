@@ -26,9 +26,9 @@ def verify_gpu():
         return False
 
 # --- KONFIGURASI TRAINING KEDUA ---
-PRETRAINED_MODEL_PATH = 'runs/detect/yolov8n_ppe_custom4/weights/best.pt'
-NEW_DATASET_CONFIG_PATH = 'archive(1)/sh17.yaml'
-NEW_RUN_NAME = 'yolov8n_ppe_finetuned_sh17'
+PRETRAINED_MODEL_PATH = '/home/azunya/kuliah/sem5/magang/project/K3_DETECTION_YOLOV8/yolo11n.pt'
+NEW_DATASET_CONFIG_PATH = '/home/azunya/kuliah/sem5/magang/project/K3_DETECTION_YOLOV8/dataset/Hard Helmet Detect v4.v3i.yolov8/data.yaml'
+NEW_RUN_NAME = '/home/azunya/kuliah/sem5/magang/project/K3_DETECTION_YOLOV8/runs/detect/V11-1'
 
 if __name__ == '__main__':
     verify_gpu()
@@ -37,15 +37,13 @@ if __name__ == '__main__':
     print(f"\nContinuing training from model: {PRETRAINED_MODEL_PATH}")
     print(f"Using new dataset: {NEW_DATASET_CONFIG_PATH}\n")
     
-    # Mulai proses training lanjutan dengan setelan yang dioptimalkan untuk ROG Strix G614JU
     results = model.train(
         data=NEW_DATASET_CONFIG_PATH,
         epochs=50,
         imgsz=640,
-        
-        # --- SETELAN OPTIMAL & AMAN UNTUK PERANGKAT ANDA ---
-        batch=8,           # Aman untuk VRAM 6GB
-        workers=4,         # Ideal untuk CPU Core i7 HX Anda
+        device=0,
+        batch=4,           # Aman untuk VRAM 6GB
+        workers=4,         # Ideal untuk CPU Core i7 HX 
         cache='disk',      # Pilihan terbaik untuk RAM 16GB
         
         name=NEW_RUN_NAME
