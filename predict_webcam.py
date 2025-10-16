@@ -5,44 +5,57 @@ import os
 from datetime import datetime
 import time
 
-# Path ke model hasil training Anda
-MODEL_PATH = 'file best atau last .pt'
+MODEL_PATH = '/home/azunya/kuliah/sem5/magang/project/K3_DETECTION_YOLOV8/runs/detect/newscript-yolov11X4/weights/best.pt'
+CLASSES_PELANGGARAN = ['no_helmet', 'no_savety_shoes']
+BASE_OUTPUT_DIR = '/home/azunya/kuliah/sem5/magang/project/K3_DETECTION_YOLOV8/bukti_pelanggaran/new'
 
-# Sesuaikan daftar ini dengan kelas pelanggaran dari model Anda.
-CLASSES_PELANGGARAN = ['no hat', 'no vest']
+COOLDOWN_SECONDS_PER_ID = 10.0
 
-# Direktori untuk menyimpan bukti pelanggaran (akan dibuat otomatis)
-OUTPUT_DIR = '/home/azunya/Documents/Yolo/hasil'
+def auto_zoom_frame(frame, box, target_zoom=2.0):
+    """
+    Memotong frame di sekitar bounding box untuk menciptakan efek digital zoom.
+    Penting: Digital zoom akan mengurangi kualitas gambar.
+    """
+    x1, y1, x2, y2 = map(int, box)
+    center_x, center_y = (x1 + x2) // 2, (y1 + y2) // 2
+    frame_h, frame_w, _ = frame.shape
+    
+    crop_w = int(frame_w / target_zoom)
+    crop_h = int(frame_h / target_zoom)
+    
+    crop_x1 = max(0, center_x - crop_w // 2)
+    crop_y1 = max(0, center_y - crop_h // 2)
+    crop_x2 = min(frame_w, crop_x1 + crop_w)
+    crop_y2 = min(frame_h, crop_y1 + crop_h)
+    
+    cropped_frame = frame[crop_y1:crop_y2, crop_x1:crop_x2]
+    
+    try:
+        zoomed_frame = cv2.resize(cropped_frame, (frame_w, frame_h))
+    except cv2.error:
+        return frame
+        
+    return zoomed_frame
 
-# Waktu jeda (dalam detik) sebelum menyimpan bukti baru untuk pelanggaran berikutnya
-COOLDOWN_SECONDS = 5.0
+try:
+    model = YOLO(MODEL_PATH)
+except Exception as e:
+    print(f"Error memuat model: {e}\nPastikan path model '{MODEL_PATH}' sudah benar.")
+    exit()
 
-# Buat direktori output jika belum ada
-os.makedirs(OUTPUT_DIR, exist_ok=True)
-
-# Muat model yang sudah ditraining
-model = YOLO(MODEL_PATH)
-
-# Inisialisasi variabel untuk cooldown
-last_capture_time = 0
-
-# Buka koneksi ke webcam (2 untuk kamera eksternal Anda)
+cooldown_tracker = {}
 cap = cv2.VideoCapture(0)
 
-# Periksa apakah webcam berhasil dibuka
 if not cap.isOpened():
     print("Error: Tidak bisa membuka kamera.")
     exit()
 
-# --- PENGATURAN JENDELA DAN ZOOM ---
-WINDOW_NAME = "YOLOv8 PPE Detection"
-zoom_level = 1.0
-ZOOM_SPEED = 0.1
+cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
+cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
 
-# Buat jendela yang bisa diubah ukurannya
+WINDOW_NAME = "Sistem Deteksi K3 (Bukti Tersimpan per Kategori)"
 cv2.namedWindow(WINDOW_NAME, cv2.WINDOW_NORMAL)
 
-# --- LOOP UTAMA ---
 while cv2.getWindowProperty(WINDOW_NAME, cv2.WND_PROP_VISIBLE) >= 1:
     success, frame = cap.read()
     if not success:
@@ -50,70 +63,45 @@ while cv2.getWindowProperty(WINDOW_NAME, cv2.WND_PROP_VISIBLE) >= 1:
         break
 
     frame = cv2.flip(frame, 1)
-
-    # --- LOGIKA UNTUK ZOOM IN DAN ZOOM OUT ---
-    h, w, _ = frame.shape
     
-    if zoom_level < 1.0:
-        new_w, new_h = int(w * zoom_level), int(h * zoom_level)
-        shrunken_frame = cv2.resize(frame, (new_w, new_h))
-        canvas = np.zeros_like(frame)
-        y_offset = (h - new_h) // 2
-        x_offset = (w - new_w) // 2
-        canvas[y_offset:y_offset + new_h, x_offset:x_offset + new_w] = shrunken_frame
-        processed_frame = canvas
-    else:
-        new_w, new_h = int(w / zoom_level), int(h / zoom_level)
-        center_x, center_y = w // 2, h // 2
-        x1, y1 = center_x - new_w // 2, center_y - new_h // 2
-        x2, y2 = center_x + new_w // 2, center_y + new_h // 2
-        cropped_frame = frame[y1:y2, x1:x2]
-        processed_frame = cv2.resize(cropped_frame, (w, h))
+    results = model.track(frame, persist=True, tracker="bytetrack.yaml", verbose=False)
+    annotated_frame = results[0].plot()
 
-    # Lakukan deteksi objek pada frame yang sudah diproses
-    results = model(processed_frame, stream=True, verbose=False)
-
-    annotated_frame = None  # Inisialisasi annotated_frame
-
-    for r in results:
-        annotated_frame = r.plot()
+    if results[0].boxes.id is not None:
+        tracker_ids = results[0].boxes.id.int().cpu().tolist()
+        class_indices = results[0].boxes.cls.cpu().tolist()
         
-        # 1. Dapatkan semua nama kelas yang terdeteksi di frame ini
-        detected_classes_indices = r.boxes.cls.cpu().numpy()
-        detected_classes_names = [r.names[int(i)] for i in detected_classes_indices]
-        
-        # 2. Cek apakah ada kelas pelanggaran yang terdeteksi
-        pelanggaran_ditemukan = any(item in detected_classes_names for item in CLASSES_PELANGGARAN)
+        for track_id, cls_idx in zip(tracker_ids, class_indices):
+            class_name = model.names[int(cls_idx)]
 
-        # 3. Jika ada pelanggaran DAN cooldown sudah selesai
-        if pelanggaran_ditemukan and (time.time() - last_capture_time) > COOLDOWN_SECONDS:
-            
-            # Buat nama file yang unik berdasarkan tanggal dan waktu
-            timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-            filename = f"pelanggaran_{timestamp}.jpg"
-            file_path = os.path.join(OUTPUT_DIR, filename)
-            
-            # Simpan frame yang sudah dianotasi (ada kotaknya)
-            cv2.imwrite(file_path, annotated_frame)
-            
-            print(f"✅ Pelanggaran terdeteksi! Bukti disimpan di: {file_path}")
-            
-            # Perbarui waktu terakhir capture untuk memulai cooldown lagi
-            last_capture_time = time.time()
-            
-    # Tampilkan frame ke jendela (pastikan annotated_frame tidak None)
-    if annotated_frame is not None:
-        cv2.imshow(WINDOW_NAME, annotated_frame)
-        
-    key = cv2.waitKey(1) & 0xFF
-    
-    if key == ord('q'):
+            if class_name in CLASSES_PELANGGARAN:
+                current_time = time.time()
+                last_capture_time = cooldown_tracker.get(track_id, 0)
+
+                if (current_time - last_capture_time) > COOLDOWN_SECONDS_PER_ID:
+                    
+                    
+                    # path folder kategori pelanggaran
+                    category_folder_path = os.path.join(BASE_OUTPUT_DIR, class_name)
+                    
+                    # Buat folder kategori jika belum ada
+                    os.makedirs(category_folder_path, exist_ok=True)
+                    
+                    # Buat nama file dan path lengkapnya di dalam folder kategori
+                    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                    filename = f"pelanggaran_ID-{track_id}_{timestamp}.jpg"
+                    file_path = os.path.join(category_folder_path, filename)
+                    
+                    cv2.imwrite(file_path, annotated_frame, [cv2.IMWRITE_JPEG_QUALITY, 95])
+                    
+                    print(f"✅ PELANGGARAN [ID: {track_id}, Kategori: {class_name}]. Bukti disimpan di folder '{class_name}'.")
+                    cooldown_tracker[track_id] = current_time
+
+    cv2.imshow(WINDOW_NAME, annotated_frame)
+
+    if cv2.waitKey(1) & 0xFF == ord('q'):
         break
-    elif key == ord('+') or key == ord('='):
-        zoom_level = min(zoom_level + ZOOM_SPEED, 5.0)
-    elif key == ord('-'):
-        zoom_level = max(zoom_level - ZOOM_SPEED, 0.2)
-        
+
 print("Menutup program...")
 cap.release()
 cv2.destroyAllWindows()
