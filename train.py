@@ -37,6 +37,7 @@ def open_terminal_monitor(command_to_run):
             linux_command_string = f'{command_to_run}; exec bash'
             
             terminals = [
+                ('kitty', '--'), ('x-terminal-emulator', '-e'),
                 ('gnome-terminal', '--'), ('x-terminal-emulator', '-e'),
                 ('konsole', '-e'), ('xfce4-terminal', '-e'),
                 ('terminator', '-e'), ('xterm', '-e')
@@ -90,6 +91,9 @@ def verify_gpu():
         return None
 
 # --- KONFIGURASI PATH ---
+PRETRAINED_MODEL_PATH = 'path best.pt'
+DATASET_CONFIG_PATH = 'path data.yaml'
+BASE_RUN_NAME = 'path new folder hasil training'
 PRETRAINED_MODEL_PATH = '/home/azunya/kuliah/sem5/magang/project/K3_DETECTION_YOLOV8/yolo11m.pt'
 DATASET_CONFIG_PATH = '/home/azunya/kuliah/sem5/magang/project/K3_DETECTION_YOLOV8/runs/detect/paling stable/new-using-yolov11-S-V1/weights/data.yaml'
 BASE_RUN_NAME = '/home/azunya/kuliah/sem5/magang/project/K3_DETECTION_YOLOV8/runs/detect/paling stable/v1 pakai seri m v2-v4 pakai seri m/yolov11-m-V'
