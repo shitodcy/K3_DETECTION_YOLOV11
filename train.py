@@ -90,9 +90,9 @@ def verify_gpu():
         return None
 
 # --- KONFIGURASI PATH ---
-PRETRAINED_MODEL_PATH = '/home/azunya/kuliah/sem5/magang/project/K3_DETECTION_YOLOV8/runs/detect/paling stable/v1 pakai seri m v2-v4 pakai seri m/yolov11-m-V_run_4/weights/best.pt'
-DATASET_CONFIG_PATH = '/home/azunya/Downloads/ID-Cards Segmentation.v1i.yolov11/data.yaml'
-BASE_RUN_NAME = '/home/azunya/kuliah/sem5/magang/project/K3_DETECTION_YOLOV8/runs/detect/fineshyt-tuning/V'
+PRETRAINED_MODEL_PATH = '/home/azunya/kuliah/sem5/magang/project/K3_DETECTION_YOLOV8/runs/detect/paling stable/v1 pakai seri m v2-v4 pakai seri m/yolov11-m-V_run_4/weights/best.pt' # bisa menggunakan model.pt atau hasil training sebelumnya
+DATASET_CONFIG_PATH = '/home/azunya/Downloads/ID-Cards Segmentation.v1i.yolov11/data.yaml' # diganti ke dataset yang akan digunakan
+BASE_RUN_NAME = '/home/azunya/kuliah/sem5/magang/project/K3_DETECTION_YOLOV8/runs/detect/fineshyt-tuning/V' #bisa diganti dengan folder lain
 
 
 # ==============================================================================
