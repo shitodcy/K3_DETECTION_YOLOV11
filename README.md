@@ -1,111 +1,58 @@
-# Deteksi APD Real-time dengan YOLOv8
+# Deteksi PPE Real-time dengan YOLOe
 
-Proyek ini menggunakan **YOLOv8** untuk mendeteksi penggunaan **Alat Pelindung Diri (APD)** secara **real-time** melalui webcam.
-Cocok untuk pemantauan keselamatan di **pabrik, gudang, dan area konstruksi.**
+Petunjuk instalasi ini disiapkan untuk menjalankan skrip `yoloe-4.py` pada sistem Arch Linux dengan GPU NVIDIA.
 
----
+## 1. Prasyarat Sistem (Arch Linux)
 
-## Fitur Utama
+Pastikan sistem Anda memiliki prasyarat berikut yang terinstal melalui `pacman`.
 
-* **Deteksi Real-time:** Analisis langsung dari webcam.
-* **Multi-Platform:** Berjalan di Windows & Linux.
-* **GPU Acceleration:** Dukungan CUDA untuk performa optimal.
-* **Kelas yang Dideteksi:**
+1.  **Driver NVIDIA & CUDA:**
+    Pastikan Anda memiliki driver NVIDIA, *utils*, dan CUDA toolkit yang terinstal.
+    ```bash
+    sudo pacman -S nvidia-dkms nvidia-utils cuda
+    ```
+    *(Reboot setelah menginstal driver jika Anda belum melakukannya.)*
 
-  * 👷 Person
-  * ⛑️ Hardhat
-  * 🦺 Vest
-  * 😷 Mask
-  * 🧤 Gloves
+2.  **Python, Git, dan Venv:**
+    Anda membutuhkan Python, manajer paket `pip`, `virtualenv` untuk isolasi proyek, dan `git` (diperlukan untuk menginstal *dependency* `clip`).
+    ```bash
+    sudo pacman -S python python-pip python-virtualenv git
+    ```
 
----
+## 2. Penyiapan Proyek Python
 
-## Prasyarat
+Langkah-langkah ini akan menyiapkan *virtual environment* Python Anda dan menginstal semua *library* yang diperlukan.
 
-### Dataset
-[Unduh Dataset](https://www.kaggle.com/datasets/shlokraval/ppe-dataset-yolov8/data)
+1.  **Buat & Aktifkan Virtual Environment:**
+    Dari dalam direktori proyek Anda (tempat `yoloe-4.py` berada), jalankan:
+    ```bash
+    # Buat environment bernama 'venv'
+    python -m venv venv
+    
+    # Aktifkan environment
+    source venv/bin/activate
+    ```
+    *(Terminal Anda sekarang seharusnya diawali dengan `(venv)`)*
 
-### Umum
+2.  **Instal PyTorch (GPU/CUDA):**
+    Anda harus menginstal PyTorch terlebih dahulu dengan dukungan CUDA. Kunjungi [situs resmi PyTorch](https://pytorch.org/get-started/locally/) untuk mendapatkan perintah yang paling sesuai dengan versi CUDA Anda. Perintah umum untuk CUDA 12.1 adalah:
+    ```bash
+    pip install torch torchvision torchaudio --index-url [https://download.pytorch.org/whl/cu121](https://download.pytorch.org/whl/cu121)
+    ```
 
-* Python **3.9+**
-* Git
-* NVIDIA GPU (disarankan ≥ 6 GB VRAM)
+3.  **Instal Library AI & CV:**
+    Sekarang instal `ultralytics` (untuk YOLOe), `opencv` (untuk *webcam*), dan `clip` (yang merupakan *dependency* untuk YOLOe).
+    ```bash
+    # Instal Ultralytics (YOLO) dan OpenCV
+    pip install ultralytics opencv-python
 
-### Windows
+    # Instal 'clip' dari GitHub (diperlukan oleh YOLOe)
+    pip install "git+[https://github.com/ultralytics/CLIP.git](https://github.com/ultralytics/CLIP.git)"
+    ```
 
-1. **Driver NVIDIA** → [Unduh di sini](https://www.nvidia.com/Download/index.aspx)
-2. **CUDA Toolkit 12.1** → [Unduh di sini](https://developer.nvidia.com/cuda-downloads)
-3. **cuDNN** → [Unduh di sini](https://developer.nvidia.com/cudnn)
+## 3. Menjalankan Aplikasi
 
-   > Ekstrak dan salin folder `bin`, `include`, dan `lib` ke direktori instalasi CUDA (`C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.1`).
-
-### Linux (Arch & Turunannya)
-
-```bash
-sudo pacman -S nvidia-dkms nvidia-utils cuda cudnn
-sudo reboot
-nvidia-smi
-```
-
----
-
-## Instalasi
-
-1. **Clone Repositori**
-
-   ```bash
-   git clone https://github.com/Magang-API/K3_DETECTION_YOLOV8
-   cd K3_DETECTION_YOLOV8
-   ```
-
-2. **Buat Virtual Environment**
-
-   ```bash
-   python -m venv venv
-   ```
-
-   * Windows: `venv\Scripts\activate`
-   * Linux: `source venv/bin/activate`
-
-3. **Instal Dependensi**
-
-   ```bash
-   pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
-   pip install -r requirements.txt
-   ```
-
-   > *Pastikan `requirements.txt` berisi `ultralytics` dan `opencv-python`.*
-
----
-
-## Training Model
-
-Jika ingin melatih ulang model dengan dataset sendiri:
+Setelah semua instalasi selesai, Anda dapat menjalankan skrip deteksi:
 
 ```bash
-python train.py
-```
-
-Model terbaik akan tersimpan di:
-
-```
-runs/detect/NAMA_TRAINING/weights/best.pt
-```
-
----
-
-## Deteksi Real-time
-
-1. Buka file `predict_webcam.py`
-2. Ubah variabel:
-
-   ```python
-   MODEL_PATH = 'runs/detect/yolov8n_ppe_custom4/weights/best.pt'
-   ```
-3. Jalankan deteksi:
-
-   ```bash
-   python predict_webcam.py
-   ```
-
-   Tekan **q** untuk keluar.
+python3 yoloe-4.py
